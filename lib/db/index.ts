@@ -199,7 +199,7 @@ function autoSeed(db: any) {
       INSERT INTO households (
         id, name, currency_symbol, currency_code, timezone, cutoff_hour, cutoff_minute, tolerance_amount, default_meal_qty, default_milk_qty, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
-    `).run(householdId, 'Siam, Raiyan & Jubayer Household', '৳', 'BDT', 'Asia/Dhaka', 6, 0, 150.0, 1, '2026-06-01T00:00:00Z');
+    `).run(householdId, 'Siam, Raian & Jubayer Household', '৳', 'BDT', 'Asia/Dhaka', 6, 0, 150.0, 1, '2026-06-01T00:00:00Z');
 
     const users = [
       { id: 'usr-siam', name: 'Siam', username: 'siam', password: '111', email: 'siam@household.local', role: 'flatmate', pin: '1111' },

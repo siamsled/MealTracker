@@ -100,7 +100,7 @@ export async function seedActualFlatData() {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
   `).run(
     householdId,
-    'Siam, Raiyan & Jubayer Household',
+    'Siam, Raian & Jubayer Household',
     '৳',
     'BDT',
     'Asia/Dhaka',
@@ -114,7 +114,7 @@ export async function seedActualFlatData() {
   // 2. Profiles
   const users = [
     { id: 'usr-siam', name: 'Siam', username: 'siam', password: '111', email: 'siam@household.local', role: 'flatmate', pin: '1111' },
-    { id: 'usr-raiyan', name: 'Raiyan', username: 'raiyan', password: '222', email: 'raiyan@household.local', role: 'flatmate', pin: '2222' },
+    { id: 'usr-raian', name: 'Raian', username: 'raian', password: '222', email: 'raian@household.local', role: 'flatmate', pin: '2222' },
     { id: 'usr-jubayer', name: 'Jubayer', username: 'jubayer', password: '333', email: 'jubayer@household.local', role: 'flatmate', pin: '3333' },
     { id: 'usr-admin', name: 'Admin', username: 'admin', password: '999', email: 'admin@household.local', role: 'admin', pin: '9999' },
     { id: 'usr-khala', name: 'Khala (Cook)', username: 'khala', password: '000', email: 'khala@household.local', role: 'cook', pin: '0000' }
