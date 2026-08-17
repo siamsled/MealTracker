@@ -17,14 +17,14 @@ export async function GET(req: NextRequest) {
     const db = getDatabase();
     const url = new URL(req.url);
     const date = url.searchParams.get('date') || getHouseholdDateString();
-    const speedParam = url.searchParams.get('rate') || '+0%'; // e.g. -15%, +0%
+    const speedParam = url.searchParams.get('rate') || '+0%';
 
-    const household = db.prepare('SELECT * FROM households LIMIT 1').get() as HouseholdRecord;
+    const household = (db.prepare('SELECT * FROM households LIMIT 1').get() || { id: 'hh-flat-4b', default_meal_qty: 1 }) as HouseholdRecord;
 
     // Fetch the 3 meal-eating flatmates
-    const users = db.prepare(
+    const users = (db.prepare(
       "SELECT id, name FROM users WHERE household_id = ? AND role IN ('admin', 'flatmate') AND id != 'usr-admin' ORDER BY name ASC"
-    ).all(household.id) as { id: string; name: string }[];
+    ).all(household.id) || []) as { id: string; name: string }[];
 
     // Fetch meals
     let totalMeals = 0;
@@ -36,13 +36,15 @@ export async function GET(req: NextRequest) {
       flatmateMeals.push({ name: u.name, quantity: qty });
     }
 
-    // Fetch special requests
-    const specials = db.prepare(`
-      SELECT sr.*, u.name as user_name
-      FROM special_requests sr
-      JOIN users u ON sr.user_id = u.id
-      WHERE sr.household_id = ? AND sr.date = ?
-    `).all(household.id, date) as any[];
+    let specials: any[] = [];
+    try {
+      specials = db.prepare(`
+        SELECT sr.*, u.name as user_name
+        FROM special_requests sr
+        JOIN users u ON sr.user_id = u.id
+        WHERE sr.household_id = ? AND sr.date = ?
+      `).all(household.id, date) as any[];
+    } catch (_) {}
 
     // Format Bengali spoken script
     const bengaliText = generateBengaliCookingInstruction(
@@ -52,11 +54,13 @@ export async function GET(req: NextRequest) {
       specials.map(s => ({ itemName: s.item_name, quantity: s.quantity, notes: s.notes }))
     );
 
-    // Cache directory
+    // Cache directory in temporary or public storage
     const cacheDir = path.join(process.cwd(), 'public', 'audio_cache');
-    if (!fs.existsSync(cacheDir)) {
-      fs.mkdirSync(cacheDir, { recursive: true });
-    }
+    try {
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+    } catch (_) {}
 
     const hash = crypto.createHash('md5').update(`${date}_${speedParam}_${bengaliText}`).digest('hex');
     const cacheFilePath = path.join(cacheDir, `${hash}.mp3`);
@@ -73,27 +77,38 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Generate crisp neural voice with bn-BD-PradeepNeural
-    const safeText = bengaliText.replace(/"/g, '\\"');
-    const cmd = `edge-tts --voice "bn-BD-PradeepNeural" --rate="${speedParam}" --text "${safeText}" --write-media "${cacheFilePath}"`;
+    // Generate high quality natural Bengali speech MP3 using Google TTS audio stream
+    const encodedText = encodeURIComponent(bengaliText);
+    const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=bn&client=tw-ob`;
 
-    await execAsync(cmd);
+    const audioRes = await fetch(googleTtsUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'https://translate.google.com/'
+      }
+    });
 
-    if (fs.existsSync(cacheFilePath)) {
-      const audioBuffer = fs.readFileSync(cacheFilePath);
-      return new NextResponse(audioBuffer, {
+    if (audioRes.ok) {
+      const arrayBuffer = await audioRes.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      try {
+        fs.writeFileSync(cacheFilePath, buffer);
+      } catch (_) {}
+
+      return new NextResponse(buffer, {
         status: 200,
         headers: {
           'Content-Type': 'audio/mpeg',
-          'Content-Length': audioBuffer.length.toString(),
+          'Content-Length': buffer.length.toString(),
           'Cache-Control': 'public, max-age=86400'
         }
       });
     }
 
-    throw new Error('Audio file generation failed');
+    throw new Error('Google Bengali TTS stream failed');
   } catch (error: any) {
-    console.error('Neural TTS Error:', error);
+    console.error('Audio Generation Error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
