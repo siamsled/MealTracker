@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase, HouseholdRecord, ExpenseRecord, UserRecord } from '@/lib/db';
+import { getDatabase, syncDatabaseFromCloud, HouseholdRecord, ExpenseRecord, UserRecord } from '@/lib/db';
 import { getHouseholdDateString } from '@/lib/cutoff';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    await syncDatabaseFromCloud();
     const db = getDatabase();
     const url = new URL(req.url);
     const household = db.prepare('SELECT * FROM households LIMIT 1').get() as HouseholdRecord;

@@ -9,8 +9,9 @@ const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN || 'eyJhbGciOiJFZERTQSIsInR5cCI
 
 // Synchronous bridge wrapper for universal queries
 class TursoUniversalBridge {
-  private client: any;
-  private localDb: any;
+  public client: any;
+  public localDb: any;
+  private hasSyncedCloud: boolean = false;
 
   constructor() {
     if (TURSO_URL && TURSO_TOKEN) {
@@ -28,6 +29,31 @@ class TursoUniversalBridge {
     const DB_PATH = process.env.DATABASE_PATH || path.join(DB_DIR, 'mealtracker.db');
     this.localDb = new DatabaseSync(DB_PATH);
     initDatabase(this.localDb);
+
+    if (this.client) {
+      this.syncFromCloud().catch(() => {});
+    }
+  }
+
+  async syncFromCloud() {
+    if (!this.client) return;
+    const tables = ['households', 'users', 'expense_categories', 'expenses', 'daily_meals', 'special_requests', 'continuous_ledger', 'audit_logs', 'bazaar_commitments'];
+    for (const t of tables) {
+      try {
+        const res = await this.client.execute(`SELECT * FROM ${t}`);
+        if (res.rows && res.rows.length > 0) {
+          const cols = Object.keys(res.rows[0]);
+          const placeholders = cols.map(() => '?').join(', ');
+          const stmt = this.localDb.prepare(`INSERT OR REPLACE INTO ${t} (${cols.join(', ')}) VALUES (${placeholders})`);
+          for (const row of res.rows) {
+            stmt.run(...cols.map(c => row[c]));
+          }
+        }
+      } catch (e: any) {
+        // Table may not exist yet or empty
+      }
+    }
+    this.hasSyncedCloud = true;
   }
 
   prepare(sql: string) {
@@ -73,6 +99,13 @@ export function getDatabase(): any {
     dbInstance = new TursoUniversalBridge();
   }
   return dbInstance;
+}
+
+export async function syncDatabaseFromCloud(): Promise<void> {
+  const db = getDatabase();
+  if (db && typeof db.syncFromCloud === 'function') {
+    await db.syncFromCloud();
+  }
 }
 
 function initDatabase(db: any) {

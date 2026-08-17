@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase, HouseholdRecord } from '@/lib/db';
+import { getDatabase, syncDatabaseFromCloud, HouseholdRecord } from '@/lib/db';
 import { computeHouseholdAccounting } from '@/lib/accounting';
 import { getCutoffStatus } from '@/lib/cutoff';
 
@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    await syncDatabaseFromCloud();
     const db = getDatabase();
     const url = new URL(req.url);
 
