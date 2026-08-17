@@ -1,11 +1,83 @@
 import { getDatabase } from './index';
+import { createClient } from '@libsql/client';
 
-export function seedDatabase() {
+const TURSO_URL = process.env.TURSO_DATABASE_URL || 'libsql://mealtracker-siamsled.aws-ap-south-1.turso.io';
+const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN || 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODY5Njc2MDgsImlkIjoiMDFhMDBmOTEtNTIwMS03NGFlLTk2MGQtYTgxOTc5NzE4ZTQ2Iiwia2lkIjoiRjFhek5MOExvSE42RHZKbWZ4b29mdlVuaGJmRFEtU3JhMjcwNWRVZnhVRSIsInJpZCI6ImY4NWNiYTFmLTZjMWEtNDg4MC1iN2Q3LWZkZWYwODBlMGQ0OCJ9.J3rsLjI0cww1RY9GagkLyLWaX7iUmGhXFdCQE9PxDYcaptkizpOn2XDSVM_jG6Mar9Bn8hE_Ikxc5gKRa-uwCQ';
+
+interface RowData {
+  date: string;
+  siamMeals: number;
+  siamBazar: number;
+  siamDesc: string;
+  raiyanMeals: number;
+  raiyanBazar: number;
+  raiyanDesc: string;
+  jubayerMeals: number;
+  jubayerBazar: number;
+  jubayerDesc: string;
+}
+
+const RAW_DATA: RowData[] = [
+  { date: '2026-06-07', siamMeals: 0, siamBazar: 1100, siamDesc: 'Bazar', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-09', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 1320, raiyanDesc: 'Bazar; oil', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-10', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-11', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-14', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-17', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-18', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-19', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-21', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 210, jubayerDesc: 'Egg,oil' },
+  { date: '2026-06-22', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 370, jubayerDesc: 'Bazar' },
+  { date: '2026-06-23', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-26', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-30', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 510, jubayerDesc: 'Chicken, Oil, Veg' },
+  { date: '2026-07-01', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-02', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 164, jubayerDesc: 'Peyaj, Eggs ,Lentil' },
+  { date: '2026-07-03', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-04', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 758, raiyanDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-05', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-06', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 425, jubayerDesc: 'chicken, Oil....' },
+  { date: '2026-07-07', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-08', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-09', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-11', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 220, jubayerDesc: 'Oil; Peyaj,zeera,moric' },
+  { date: '2026-07-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 105, jubayerDesc: 'Polao chal, mugdal' },
+  { date: '2026-07-13', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-14', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-15', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 816, raiyanDesc: 'Final Bazar for July Hopefully', jubayerMeals: 1, jubayerBazar: 360, jubayerDesc: 'Chicken, Polao Chal' },
+  { date: '2026-07-16', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-17', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-18', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-19', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-20', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-21', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-23', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-24', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 200, raiyanDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 295, jubayerDesc: 'Cal, Dal, Egg, Peyaj' },
+  { date: '2026-07-25', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-26', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-27', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-01', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 42, jubayerDesc: 'Salt' },
+  { date: '2026-08-02', siamMeals: 0, siamBazar: 1500, siamDesc: 'Bazar', raiyanMeals: 0, raiyanBazar: 500, raiyanDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 380, jubayerDesc: 'Bazar' },
+  { date: '2026-08-03', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-04', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-05', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-10', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-11', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 80, jubayerDesc: 'Egg 6' },
+  { date: '2026-08-13', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-14', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-16', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-17', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 500, raiyanDesc: 'bazar', jubayerMeals: 1, jubayerBazar: 80, jubayerDesc: 'bazar' }
+];
+
+export async function seedActualFlatData() {
   const db = getDatabase();
+  const householdId = 'hh-flat-4b';
 
-  console.log('🌱 Seeding MealTracker with realistic flat data...');
+  console.log('🔄 Seeding full June, July, August historical and current data...');
 
-  // Clear existing tables
+  // Reset records
   db.exec(`
     DELETE FROM audit_logs;
     DELETE FROM daily_cooking_instructions;
@@ -20,8 +92,6 @@ export function seedDatabase() {
     DELETE FROM users;
     DELETE FROM households;
   `);
-
-  const householdId = 'hh-flat-4b';
 
   // 1. Insert Household
   db.prepare(`
@@ -38,7 +108,7 @@ export function seedDatabase() {
     0,
     150.0,
     1,
-    '2026-08-01T00:00:00Z'
+    '2026-06-01T00:00:00Z'
   );
 
   // 2. Profiles
@@ -56,106 +126,160 @@ export function seedDatabase() {
   `);
 
   for (const u of users) {
-    insertUser.run(u.id, householdId, u.name, u.username, u.password, u.email, u.role, u.pin, '2026-08-01T00:00:00Z');
+    insertUser.run(u.id, householdId, u.name, u.username, u.password, u.email, u.role, u.pin, '2026-06-01T00:00:00Z');
   }
 
-  // 3. Category
-  db.prepare(`
+  // 3. Categories
+  const catStmt = db.prepare(`
     INSERT INTO expense_categories (id, household_id, name, type, icon, is_default)
-    VALUES (?, ?, ?, 'food_pool', '🛒', 1)
-  `).run('cat-bazaar', householdId, 'Bazaar Food Purchase');
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+  catStmt.run('cat-food-1', householdId, 'Daily Bazaar', 'food_pool', '🛒', 1);
+  catStmt.run('cat-food-2', householdId, 'Spices & Groceries', 'food_pool', '🌶️', 1);
+  catStmt.run('cat-food-3', householdId, 'Oil & Condiments', 'food_pool', '🫒', 1);
 
-  // 4. Seed Daily Meals (August 1 to 20, 2026)
-  // Siam eats regularly (25 meals)
-  // Raiyan eats slightly more (30 meals)
-  // Jubayer eats fewer meals (15 meals - out of home frequently)
+  // 4. Insert Meals & Bazaar Expenses from CSV rows
   const insertMeal = db.prepare(`
     INSERT INTO daily_meals (id, household_id, user_id, date, quantity, is_locked, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  const insertSpecial = db.prepare(`
-    INSERT INTO special_requests (id, household_id, user_id, date, item_name, quantity, notes, estimated_unit_cost, is_locked, created_at)
+  const insertExpense = db.prepare(`
+    INSERT INTO expenses (id, household_id, paid_by_user_id, date, amount, category_id, description, receipt_images, is_food_pool, is_correction, created_by_user_id, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
+  `);
+
+  const insertAudit = db.prepare(`
+    INSERT INTO audit_logs (id, household_id, user_id, action, target_table, target_id, before_value, after_value, reason, timestamp)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  const insertInstruction = db.prepare(`
-    INSERT INTO daily_cooking_instructions (id, household_id, date, total_meals, breakdown_json, special_requests_json, bengali_text, status, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'generated', ?)
-  `);
+  let expIndex = 1;
 
-  for (let day = 1; day <= 22; day++) {
-    const dayStr = day < 10 ? `0${day}` : `${day}`;
-    const dateStr = `2026-08-${dayStr}`;
-    const createdTime = `${dateStr}T06:00:00Z`;
+  for (const row of RAW_DATA) {
+    const d = row.date;
 
-    const mealSiam = day <= 17 ? (day % 4 === 0 ? 2 : 1) : 1;
-    const mealRaiyan = day <= 17 ? (day % 2 === 0 ? 2 : 1) : 1;
-    const mealJubayer = day <= 17 ? ((day % 2 === 1 && day <= 15) ? 1 : (day === 17 ? 1 : 0)) : 1;
-    const totalMeals = mealSiam + mealRaiyan + mealJubayer;
+    // Meals
+    insertMeal.run(`dm-siam-${d}`, householdId, 'usr-siam', d, row.siamMeals, 1, `${d}T06:00:00Z`, `${d}T06:00:00Z`);
+    insertMeal.run(`dm-raiyan-${d}`, householdId, 'usr-raiyan', d, row.raiyanMeals, 1, `${d}T06:00:00Z`, `${d}T06:00:00Z`);
+    insertMeal.run(`dm-jubayer-${d}`, householdId, 'usr-jubayer', d, row.jubayerMeals, 1, `${d}T06:00:00Z`, `${d}T06:00:00Z`);
 
-    insertMeal.run(`meal-${dateStr}-siam`, householdId, 'usr-siam', dateStr, mealSiam, day < 17 ? 1 : 0, createdTime, createdTime);
-    insertMeal.run(`meal-${dateStr}-raiyan`, householdId, 'usr-raiyan', dateStr, mealRaiyan, day < 17 ? 1 : 0, createdTime, createdTime);
-    insertMeal.run(`meal-${dateStr}-jubayer`, householdId, 'usr-jubayer', dateStr, mealJubayer, day < 17 ? 1 : 0, createdTime, createdTime);
-
-    const specials: any[] = [];
-    if (day === 10 || day === 17) {
-      insertSpecial.run(`spec-${dateStr}-egg`, householdId, 'usr-raiyan', dateStr, 'Egg', 2, 'Boiled eggs for breakfast', 15.0, 1, createdTime);
-      specials.push({ itemName: 'Egg', quantity: 2 });
+    // Siam Bazaar
+    if (row.siamBazar > 0) {
+      const expId = `exp-siam-${d}-${expIndex++}`;
+      insertExpense.run(expId, householdId, 'usr-siam', d, row.siamBazar, 'cat-food-1', row.siamDesc || 'Bazaar', '[]', 'usr-siam', `${d}T10:00:00Z`);
+      insertAudit.run(`aud-${expId}`, householdId, 'usr-siam', 'RECORD_BAZAAR', 'expenses', expId, null, `+৳${row.siamBazar}`, `Recorded: ${row.siamDesc || 'Bazaar'}`, `${d}T10:00:00Z`);
     }
 
-    const breakdown = [
-      { name: 'Siam', quantity: mealSiam },
-      { name: 'Raiyan', quantity: mealRaiyan },
-      { name: 'Jubayer', quantity: mealJubayer }
-    ];
+    // Raiyan Bazaar
+    if (row.raiyanBazar > 0) {
+      const expId = `exp-raiyan-${d}-${expIndex++}`;
+      insertExpense.run(expId, householdId, 'usr-raiyan', d, row.raiyanBazar, 'cat-food-1', row.raiyanDesc || 'Bazaar', '[]', 'usr-raiyan', `${d}T10:00:00Z`);
+      insertAudit.run(`aud-${expId}`, householdId, 'usr-raiyan', 'RECORD_BAZAAR', 'expenses', expId, null, `+৳${row.raiyanBazar}`, `Recorded: ${row.raiyanDesc || 'Bazaar'}`, `${d}T10:00:00Z`);
+    }
 
-    const instructionBengali = `শুভ সকাল খালা। আজকে মোট ${totalMeals === 3 ? 'তিনটি' : totalMeals === 4 ? 'চারটি' : `${totalMeals}টি`} মিল রান্না করতে হবে।` + (specials.length > 0 ? ' দুইটি ডিমের বিশেষ অনুরোধ আছে।' : '') + ' ধন্যবাদ।';
-
-    insertInstruction.run(
-      `instr-${dateStr}`,
-      householdId,
-      dateStr,
-      totalMeals,
-      JSON.stringify(breakdown),
-      JSON.stringify(specials),
-      instructionBengali,
-      createdTime
-    );
+    // Jubayer Bazaar
+    if (row.jubayerBazar > 0) {
+      const expId = `exp-jubayer-${d}-${expIndex++}`;
+      insertExpense.run(expId, householdId, 'usr-jubayer', d, row.jubayerBazar, 'cat-food-1', row.jubayerDesc || 'Bazaar', '[]', 'usr-jubayer', `${d}T10:00:00Z`);
+      insertAudit.run(`aud-${expId}`, householdId, 'usr-jubayer', 'RECORD_BAZAAR', 'expenses', expId, null, `+৳${row.jubayerBazar}`, `Recorded: ${row.jubayerDesc || 'Bazaar'}`, `${d}T10:00:00Z`);
+    }
   }
 
-  // 5. Seed Bazaar Purchases
-  const insertExpense = db.prepare(`
-    INSERT INTO expenses (id, household_id, paid_by_user_id, date, amount, category_id, description, is_food_pool, is_correction, original_expense_id, created_by_user_id, created_at)
-    VALUES (?, ?, ?, ?, ?, 'cat-bazaar', ?, 1, 0, NULL, ?, ?)
-  `);
+  // 5. Also sync to Turso cloud database
+  if (TURSO_URL && TURSO_TOKEN) {
+    try {
+      const client = createClient({ url: TURSO_URL, authToken: TURSO_TOKEN });
+      await client.execute('DELETE FROM audit_logs');
+      await client.execute('DELETE FROM continuous_ledger');
+      await client.execute('DELETE FROM expenses');
+      await client.execute('DELETE FROM daily_meals');
+      await client.execute('DELETE FROM expense_categories');
+      await client.execute('DELETE FROM users');
+      await client.execute('DELETE FROM households');
 
-  const insertLedger = db.prepare(`
-    INSERT INTO continuous_ledger (id, household_id, timestamp, date, user_id, entry_type, amount, description, ref_table, ref_id, audit_reason, created_at)
-    VALUES (?, ?, ?, ?, ?, 'bazaar_contribution', ?, ?, 'expenses', ?, NULL, ?)
-  `);
+      await client.execute({
+        sql: 'INSERT INTO households (id, name, currency_symbol, currency_code, timezone, cutoff_hour, cutoff_minute, tolerance_amount, default_meal_qty, default_milk_qty, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)',
+        args: [householdId, 'Siam, Raiyan & Jubayer Household', '৳', 'BDT', 'Asia/Dhaka', 6, 0, 150.0, 1, '2026-06-01T00:00:00Z']
+      });
 
-  const bazaarList = [
-    { id: 'exp-01', user: 'usr-siam', date: '2026-08-02', amount: 3000.0, desc: '25kg Miniket rice, 5L soybean oil, spices' },
-    { id: 'exp-02', user: 'usr-jubayer', date: '2026-08-07', amount: 3000.0, desc: 'Rui fish, vegetables, potatoes, onions, lentils' },
-    { id: 'exp-03', user: 'usr-raiyan', date: '2026-08-12', amount: 4500.0, desc: '2kg Fresh beef, 2 broiler chickens, eggs & ginger' }
-  ];
+      for (const u of users) {
+        await client.execute({
+          sql: 'INSERT INTO users (id, household_id, name, username, password, email, role, pin, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)',
+          args: [u.id, householdId, u.name, u.username, u.password, u.email, u.role, u.pin, '2026-06-01T00:00:00Z']
+        });
+      }
 
-  for (const b of bazaarList) {
-    const timeISO = `${b.date}T10:30:00Z`;
-    insertExpense.run(b.id, householdId, b.user, b.date, b.amount, b.desc, b.user, timeISO);
-    insertLedger.run(`ledg-${b.id}`, householdId, timeISO, b.date, b.user, b.amount, `Bazaar purchase: ${b.desc}`, b.id, timeISO);
+      for (const c of [
+        { id: 'cat-food-1', name: 'Daily Bazaar', type: 'food_pool', icon: '🛒' },
+        { id: 'cat-food-2', name: 'Spices & Groceries', type: 'food_pool', icon: '🌶️' },
+        { id: 'cat-food-3', name: 'Oil & Condiments', type: 'food_pool', icon: '🫒' }
+      ]) {
+        await client.execute({
+          sql: 'INSERT INTO expense_categories (id, household_id, name, type, icon, is_default) VALUES (?, ?, ?, ?, ?, 1)',
+          args: [c.id, householdId, c.name, c.type, c.icon]
+        });
+      }
+
+      for (const row of RAW_DATA) {
+        const d = row.date;
+        await client.execute({
+          sql: 'INSERT INTO daily_meals (id, household_id, user_id, date, quantity, is_locked, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          args: [`dm-siam-${d}`, householdId, 'usr-siam', d, row.siamMeals, 1, `${d}T06:00:00Z`, `${d}T06:00:00Z`]
+        });
+        await client.execute({
+          sql: 'INSERT INTO daily_meals (id, household_id, user_id, date, quantity, is_locked, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          args: [`dm-raiyan-${d}`, householdId, 'usr-raiyan', d, row.raiyanMeals, 1, `${d}T06:00:00Z`, `${d}T06:00:00Z`]
+        });
+        await client.execute({
+          sql: 'INSERT INTO daily_meals (id, household_id, user_id, date, quantity, is_locked, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          args: [`dm-jubayer-${d}`, householdId, 'usr-jubayer', d, row.jubayerMeals, 1, `${d}T06:00:00Z`, `${d}T06:00:00Z`]
+        });
+
+        if (row.siamBazar > 0) {
+          const expId = `exp-siam-${d}`;
+          await client.execute({
+            sql: 'INSERT INTO expenses (id, household_id, paid_by_user_id, date, amount, category_id, description, receipt_images, is_food_pool, is_correction, created_by_user_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)',
+            args: [expId, householdId, 'usr-siam', d, row.siamBazar, 'cat-food-1', row.siamDesc || 'Bazaar', '[]', 'usr-siam', `${d}T10:00:00Z`]
+          });
+          await client.execute({
+            sql: 'INSERT INTO audit_logs (id, household_id, user_id, action, target_table, target_id, before_value, after_value, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            args: [`aud-${expId}`, householdId, 'usr-siam', 'RECORD_BAZAAR', 'expenses', expId, null, `+৳${row.siamBazar}`, `Recorded: ${row.siamDesc || 'Bazaar'}`, `${d}T10:00:00Z`]
+          });
+        }
+
+        if (row.raiyanBazar > 0) {
+          const expId = `exp-raiyan-${d}`;
+          await client.execute({
+            sql: 'INSERT INTO expenses (id, household_id, paid_by_user_id, date, amount, category_id, description, receipt_images, is_food_pool, is_correction, created_by_user_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)',
+            args: [expId, householdId, 'usr-raiyan', d, row.raiyanBazar, 'cat-food-1', row.raiyanDesc || 'Bazaar', '[]', 'usr-raiyan', `${d}T10:00:00Z`]
+          });
+          await client.execute({
+            sql: 'INSERT INTO audit_logs (id, household_id, user_id, action, target_table, target_id, before_value, after_value, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            args: [`aud-${expId}`, householdId, 'usr-raiyan', 'RECORD_BAZAAR', 'expenses', expId, null, `+৳${row.raiyanBazar}`, `Recorded: ${row.raiyanDesc || 'Bazaar'}`, `${d}T10:00:00Z`]
+          });
+        }
+
+        if (row.jubayerBazar > 0) {
+          const expId = `exp-jubayer-${d}`;
+          await client.execute({
+            sql: 'INSERT INTO expenses (id, household_id, paid_by_user_id, date, amount, category_id, description, receipt_images, is_food_pool, is_correction, created_by_user_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)',
+            args: [expId, householdId, 'usr-jubayer', d, row.jubayerBazar, 'cat-food-1', row.jubayerDesc || 'Bazaar', '[]', 'usr-jubayer', `${d}T10:00:00Z`]
+          });
+          await client.execute({
+            sql: 'INSERT INTO audit_logs (id, household_id, user_id, action, target_table, target_id, before_value, after_value, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            args: [`aud-${expId}`, householdId, 'usr-jubayer', 'RECORD_BAZAAR', 'expenses', expId, null, `+৳${row.jubayerBazar}`, `Recorded: ${row.jubayerDesc || 'Bazaar'}`, `${d}T10:00:00Z`]
+          });
+        }
+      }
+
+      console.log('✅ Successfully seeded Turso Cloud Database with all provided CSV records!');
+    } catch (err) {
+      console.error('Turso sync error during seed:', err);
+    }
   }
 
-  // 6. Audit Log
-  db.prepare(`
-    INSERT INTO audit_logs (id, household_id, user_id, action, target_table, target_id, before_value, after_value, reason, timestamp)
-    VALUES (?, ?, ?, 'CREATE_HOUSEHOLD', 'households', ?, NULL, 'Setup household system for Siam, Raiyan, and Jubayer', 'Household setup', '2026-08-01T00:00:00Z')
-  `).run('aud-init', householdId, 'usr-admin', householdId);
-
-  console.log('✅ Realistic seed data generated successfully!');
+  console.log('✅ Seed completed successfully!');
 }
 
-if (require.main === module) {
-  seedDatabase();
-}
+export const seedDatabase = seedActualFlatData;
