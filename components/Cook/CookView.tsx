@@ -57,6 +57,12 @@ export default function CookView() {
     }
   }, [date]);
 
+  function formatDateParts(year: number, month: number, day: number): string {
+    const mm = String(month).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    return `${year}-${mm}-${dd}`;
+  }
+
   function changeDate(newDate: string) {
     stopSpokenBengali();
     setDate(newDate);
@@ -70,10 +76,16 @@ export default function CookView() {
   function shiftDate(days: number) {
     if (!date) return;
     const [y, m, d] = date.split('-').map(Number);
-    const dt = new Date(y, m - 1, d);
-    dt.setDate(dt.getDate() + days);
-    const newDateStr = dt.toISOString().split('T')[0];
+    const dt = new Date(y, m - 1, d + days);
+    const newDateStr = formatDateParts(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
     changeDate(newDateStr);
+  }
+
+  function getTomorrowDate(): string {
+    if (!todayDate) return '';
+    const [y, m, d] = todayDate.split('-').map(Number);
+    const dt = new Date(y, m - 1, d + 1);
+    return formatDateParts(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
   }
 
   async function fetchCookData(targetDate: string) {
@@ -215,19 +227,16 @@ export default function CookView() {
 
           <button
             onClick={() => {
-              if (!todayDate) return;
-              const [y, m, d] = todayDate.split('-').map(Number);
-              const dt = new Date(y, m - 1, d);
-              dt.setDate(dt.getDate() + 1);
-              changeDate(dt.toISOString().split('T')[0]);
+              const tomorrow = getTomorrowDate();
+              if (tomorrow) changeDate(tomorrow);
             }}
             style={{
               padding: '4px 12px',
               borderRadius: '20px',
               border: '1px solid',
-              borderColor: date !== todayDate ? '#0284c7' : '#e2e8f0',
-              backgroundColor: date !== todayDate ? '#e0f2fe' : '#f8fafc',
-              color: date !== todayDate ? '#0369a1' : '#64748b',
+              borderColor: date === getTomorrowDate() ? '#0284c7' : '#e2e8f0',
+              backgroundColor: date === getTomorrowDate() ? '#e0f2fe' : '#f8fafc',
+              color: date === getTomorrowDate() ? '#0369a1' : '#64748b',
               fontSize: '12px',
               fontWeight: 700,
               cursor: 'pointer'
