@@ -1,9 +1,12 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
-// Ensure data directory exists for local development
-const DB_DIR = path.join(process.cwd(), 'data');
+// In Vercel serverless functions, only /tmp (or os.tmpdir()) is writable
+const isVercel = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
+const DB_DIR = isVercel ? os.tmpdir() : path.join(process.cwd(), 'data');
+
 if (!fs.existsSync(DB_DIR)) {
   try {
     fs.mkdirSync(DB_DIR, { recursive: true });
@@ -16,13 +19,14 @@ let dbInstance: any = null;
 
 export function getDatabase(): any {
   if (!dbInstance) {
+    const isNew = !fs.existsSync(DB_PATH);
     dbInstance = new DatabaseSync(DB_PATH);
-    initDatabase(dbInstance);
+    initDatabase(dbInstance, isNew);
   }
   return dbInstance;
 }
 
-function initDatabase(db: any) {
+function initDatabase(db: any, isNew: boolean) {
   const schemaPath = path.join(process.cwd(), 'lib', 'db', 'schema.sql');
   if (fs.existsSync(schemaPath)) {
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
@@ -37,6 +41,52 @@ function initDatabase(db: any) {
   try {
     db.exec(`ALTER TABLE users ADD COLUMN password TEXT;`);
   } catch (_) {}
+
+  // Automatically seed on initial creation if empty
+  try {
+    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+    if (!userCount || userCount.count === 0) {
+      autoSeed(db);
+    }
+  } catch (_) {}
+}
+
+function autoSeed(db: any) {
+  const householdId = 'hh-flat-4b';
+  try {
+    db.prepare(`
+      INSERT INTO households (
+        id, name, currency_symbol, currency_code, timezone, cutoff_hour, cutoff_minute, tolerance_amount, default_meal_qty, default_milk_qty, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+    `).run(householdId, 'Siam, Raiyan & Jubayer Household', '৳', 'BDT', 'Asia/Dhaka', 6, 0, 150.0, 1, '2026-08-01T00:00:00Z');
+
+    const users = [
+      { id: 'usr-siam', name: 'Siam', username: 'siam', password: '111', email: 'siam@household.local', role: 'flatmate', pin: '1111' },
+      { id: 'usr-raiyan', name: 'Raiyan', username: 'raiyan', password: '222', email: 'raiyan@household.local', role: 'flatmate', pin: '2222' },
+      { id: 'usr-jubayer', name: 'Jubayer', username: 'jubayer', password: '333', email: 'jubayer@household.local', role: 'flatmate', pin: '3333' },
+      { id: 'usr-admin', name: 'Admin', username: 'admin', password: '999', email: 'admin@household.local', role: 'admin', pin: '9999' },
+      { id: 'usr-khala', name: 'Khala (Cook)', username: 'khala', password: '000', email: 'khala@household.local', role: 'cook', pin: '0000' }
+    ];
+
+    const insertUser = db.prepare(`
+      INSERT INTO users (id, household_id, name, username, password, email, role, pin, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+    `);
+
+    for (const u of users) {
+      insertUser.run(u.id, householdId, u.name, u.username, u.password, u.email, u.role, u.pin, '2026-08-01T00:00:00Z');
+    }
+
+    const catStmt = db.prepare(`
+      INSERT INTO expense_categories (id, household_id, name, type, icon, is_default)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    catStmt.run('cat-food-1', householdId, 'Daily Bazaar', 'food_pool', '🛒', 1);
+    catStmt.run('cat-food-2', householdId, 'Spices & Groceries', 'food_pool', '🌶️', 1);
+    catStmt.run('cat-food-3', householdId, 'Oil & Condiments', 'food_pool', '🫒', 1);
+  } catch (err) {
+    console.error('Auto seed error:', err);
+  }
 }
 
 // Database helper utilities
