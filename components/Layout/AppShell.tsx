@@ -523,32 +523,42 @@ export default function AppShell({ children }: AppShellProps) {
 
         {/* Profile & Password Modal */}
         {showProfileModal && (
-          <div className="modal-backdrop">
-            <div className="modal-content" style={{ maxWidth: '420px', borderRadius: '12px' }}>
-              <div className="modal-header" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+          <div className="modal-overlay" style={{ zIndex: 99999, backdropFilter: 'blur(6px)', backgroundColor: 'rgba(15, 23, 42, 0.65)' }}>
+            <div className="modal-dialog" style={{
+              maxWidth: '400px',
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              padding: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e2e8f0',
+              animation: 'fadeIn 0.15s ease-out'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', marginBottom: '16px' }}>
                 <div>
-                  <h3 className="modal-title" style={{ fontSize: '16px', fontWeight: 800 }}>Profile &amp; Security</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                    Profile &amp; Security
+                  </h3>
                   <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                    Personalize your account for Flat 6A
+                    Personalize your Flat 6A account
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowProfileModal(false)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
+                  style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}
                 >
-                  <X size={18} />
+                  <X size={15} />
                 </button>
               </div>
 
-              <form onSubmit={handleSaveProfile} style={{ padding: '16px 0 0 0' }}>
+              <form onSubmit={handleSaveProfile}>
                 {profileSuccessMsg && (
                   <div style={{
                     padding: '8px 12px',
                     backgroundColor: '#f0fdf4',
                     border: '1px solid #bbf7d0',
                     color: '#15803d',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '12px',
                     fontWeight: 700,
                     marginBottom: '14px',
@@ -563,25 +573,26 @@ export default function AppShell({ children }: AppShellProps) {
 
                 {/* Avatar Preview & Upload */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px' }}>
-                  <div style={{ position: 'relative', marginBottom: '10px' }}>
+                  <div style={{ position: 'relative', marginBottom: '8px' }}>
                     {profileAvatar ? (
                       <img
                         src={profileAvatar}
                         alt="Profile Preview"
-                        style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #6366f1' }}
+                        style={{ width: '84px', height: '84px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #6366f1', boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)' }}
                       />
                     ) : (
                       <div style={{
-                        width: '80px',
-                        height: '80px',
+                        width: '84px',
+                        height: '84px',
                         borderRadius: '50%',
-                        backgroundColor: '#e0e7ff',
-                        color: '#4338ca',
-                        fontSize: '28px',
+                        background: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)',
+                        color: '#ffffff',
+                        fontSize: '32px',
                         fontWeight: 900,
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        boxShadow: '0 4px 10px rgba(99, 102, 241, 0.25)'
                       }}>
                         {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
                       </div>
@@ -591,16 +602,17 @@ export default function AppShell({ children }: AppShellProps) {
                         position: 'absolute',
                         bottom: 0,
                         right: 0,
-                        backgroundColor: '#4f46e5',
+                        background: '#0f172a',
                         color: '#fff',
                         borderRadius: '50%',
-                        width: '26px',
-                        height: '26px',
+                        width: '28px',
+                        height: '28px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
+                        border: '2px solid #ffffff'
                       }}
                       title="Upload profile picture"
                     >
@@ -617,28 +629,37 @@ export default function AppShell({ children }: AppShellProps) {
                       />
                     </label>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    Tap camera to change profile photo
+                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                    Tap camera to change photo
                   </div>
                 </div>
 
                 {/* Account Details */}
                 <div style={{ marginBottom: '14px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                     Full Name
                   </label>
                   <input
                     type="text"
                     value={currentUser?.name || ''}
                     disabled
-                    className="form-control"
-                    style={{ backgroundColor: '#f8fafc', color: '#64748b', fontSize: '13px', cursor: 'not-allowed' }}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0',
+                      backgroundColor: '#f8fafc',
+                      color: '#64748b',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'not-allowed'
+                    }}
                   />
                 </div>
 
                 {/* Change Password */}
                 <div style={{ marginBottom: '18px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: 700, color: '#475569', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                     New Password / PIN (Optional)
                   </label>
                   <input
@@ -646,29 +667,52 @@ export default function AppShell({ children }: AppShellProps) {
                     placeholder="Leave blank to keep current password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="form-control"
-                    style={{ fontSize: '13px' }}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '13.5px',
+                      outline: 'none'
+                    }}
                   />
                   <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
-                    Minimum 3 characters (e.g. 111, password123)
+                    Example: 111, 222, 333, or custom PIN
                   </div>
                 </div>
 
                 {/* Modal Footer Buttons */}
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '14px', borderTop: '1px solid #f1f5f9' }}>
                   <button
                     type="button"
                     onClick={() => setShowProfileModal(false)}
-                    className="btn"
-                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                    style={{
+                      fontSize: '12.5px',
+                      padding: '7px 14px',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0',
+                      backgroundColor: '#ffffff',
+                      color: '#475569',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={profileSaving}
-                    className="btn btn-primary"
-                    style={{ fontSize: '12px', padding: '6px 16px', fontWeight: 700 }}
+                    style={{
+                      fontSize: '12.5px',
+                      padding: '7px 18px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      backgroundColor: '#0f172a',
+                      color: '#ffffff',
+                      fontWeight: 700,
+                      cursor: profileSaving ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}
                   >
                     {profileSaving ? 'Saving...' : 'Save Profile'}
                   </button>
