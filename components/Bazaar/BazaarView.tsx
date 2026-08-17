@@ -100,8 +100,13 @@ export default function BazaarView() {
   const editFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const today = '2026-08-17';
-    setExpenseDate(today);
+    const formatted = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Dhaka',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
+    setExpenseDate(formatted);
     fetchData();
   }, [filterMonth, filterUser]);
 
