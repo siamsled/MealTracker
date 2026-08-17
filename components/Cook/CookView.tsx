@@ -22,6 +22,7 @@ interface CookInstructionData {
 export default function CookView() {
   const [data, setData] = useState<CookInstructionData | null>(null);
   const [date, setDate] = useState<string>('');
+  const [todayDate, setTodayDate] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState<number>(0.85);
@@ -35,6 +36,18 @@ export default function CookView() {
       day: '2-digit'
     }).format(now);
 
+    setTodayDate(formatted);
+
+    // Read ?date= from URL if present
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlDate = params.get('date');
+      if (urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate)) {
+        setDate(urlDate);
+        return;
+      }
+    }
+
     setDate(formatted);
   }, []);
 
@@ -43,6 +56,25 @@ export default function CookView() {
       fetchCookData(date);
     }
   }, [date]);
+
+  function changeDate(newDate: string) {
+    stopSpokenBengali();
+    setDate(newDate);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('date', newDate);
+      window.history.replaceState({}, '', url.toString());
+    }
+  }
+
+  function shiftDate(days: number) {
+    if (!date) return;
+    const [y, m, d] = date.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + days);
+    const newDateStr = dt.toISOString().split('T')[0];
+    changeDate(newDateStr);
+  }
 
   async function fetchCookData(targetDate: string) {
     setLoading(true);
@@ -123,18 +155,86 @@ export default function CookView() {
   return (
     <div style={{ maxWidth: '640px', margin: '0 auto', paddingBottom: '40px' }}>
       
-      {/* Simple Today's Date Banner (Concerning Day Only) */}
+      {/* Date Banner & Easy Day Switcher */}
       <div style={{ 
-        textAlign: 'center', 
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '8px',
         marginBottom: '14px', 
-        padding: '10px 16px', 
+        padding: '12px 16px', 
         backgroundColor: '#ffffff', 
         border: '1px solid var(--border-color)', 
-        borderRadius: '8px',
+        borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
       }}>
-        <div style={{ fontWeight: 800, fontSize: '16px', color: '#1e293b' }}>
-          📅 আজকের তারিখ: {date}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <button
+            onClick={() => shiftDate(-1)}
+            className="btn btn-sm"
+            style={{ padding: '6px 10px', gap: '4px' }}
+            title="Previous Day"
+          >
+            <ChevronLeft size={16} /> আগের দিন
+          </button>
+
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontWeight: 900, fontSize: '16px', color: '#0f172a' }}>
+              📅 {date} {date === todayDate ? '(আজকে)' : ''}
+            </div>
+          </div>
+
+          <button
+            onClick={() => shiftDate(1)}
+            className="btn btn-sm"
+            style={{ padding: '6px 10px', gap: '4px' }}
+            title="Next Day"
+          >
+            পরের দিন <ChevronRight size={16} />
+          </button>
+        </div>
+
+        {/* Quick Day Chips */}
+        <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+          <button
+            onClick={() => changeDate(todayDate)}
+            style={{
+              padding: '4px 12px',
+              borderRadius: '20px',
+              border: '1px solid',
+              borderColor: date === todayDate ? '#0284c7' : '#e2e8f0',
+              backgroundColor: date === todayDate ? '#e0f2fe' : '#f8fafc',
+              color: date === todayDate ? '#0369a1' : '#64748b',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            আজকে
+          </button>
+
+          <button
+            onClick={() => {
+              if (!todayDate) return;
+              const [y, m, d] = todayDate.split('-').map(Number);
+              const dt = new Date(y, m - 1, d);
+              dt.setDate(dt.getDate() + 1);
+              changeDate(dt.toISOString().split('T')[0]);
+            }}
+            style={{
+              padding: '4px 12px',
+              borderRadius: '20px',
+              border: '1px solid',
+              borderColor: date !== todayDate ? '#0284c7' : '#e2e8f0',
+              backgroundColor: date !== todayDate ? '#e0f2fe' : '#f8fafc',
+              color: date !== todayDate ? '#0369a1' : '#64748b',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            আগামীকাল (পরের দিন)
+          </button>
         </div>
       </div>
 
