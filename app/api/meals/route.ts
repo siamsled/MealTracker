@@ -90,13 +90,13 @@ export async function POST(req: NextRequest) {
     } = body;
 
     const household = db.prepare('SELECT * FROM households LIMIT 1').get() as HouseholdRecord;
-    const actorUserId = req.cookies.get('mt_user_id')?.value || userId;
+    const actorUserId = req.cookies.get('mt_user_id')?.value || userId || 'usr-siam';
     const actorUser = db.prepare('SELECT * FROM users WHERE id = ?').get(actorUserId) as UserRecord | undefined;
 
     const isAdmin = actorUser?.role === 'admin';
 
-    // Flatmate permission check: can ONLY edit their own meals
-    if (!isAdmin && userId !== actorUserId) {
+    // Flatmate permission check: can ONLY edit their own individual meal quantity
+    if (mealQuantity !== undefined && !isAdmin && userId && userId !== actorUserId) {
       return NextResponse.json({
         success: false,
         error: 'You can only modify your own meal plan.'

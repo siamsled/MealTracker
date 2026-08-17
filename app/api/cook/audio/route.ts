@@ -41,9 +41,9 @@ export async function GET(req: NextRequest) {
     let specials: any[] = [];
     try {
       specials = db.prepare(`
-        SELECT sr.*, u.name as user_name
+        SELECT sr.*, COALESCE(u.name, 'Flatmate') as user_name
         FROM special_requests sr
-        JOIN users u ON sr.user_id = u.id
+        LEFT JOIN users u ON sr.user_id = u.id
         WHERE sr.household_id = ? AND sr.date = ?
       `).all(household.id, date) as any[];
     } catch (_) {}
