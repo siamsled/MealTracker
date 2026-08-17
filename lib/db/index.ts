@@ -1,48 +1,90 @@
 import { DatabaseSync } from 'node:sqlite';
+import { createClient } from '@libsql/client';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
 
-// In Vercel serverless functions, only /tmp (or os.tmpdir()) is writable
-const isVercel = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
-const DB_DIR = isVercel ? os.tmpdir() : path.join(process.cwd(), 'data');
+const TURSO_URL = process.env.TURSO_DATABASE_URL || 'libsql://mealtracker-siamsled.aws-ap-south-1.turso.io';
+const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN || 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODY5Njc2MDgsImlkIjoiMDFhMDBmOTEtNTIwMS03NGFlLTk2MGQtYTgxOTc5NzE4ZTQ2Iiwia2lkIjoiRjFhek5MOExvSE42RHZKbWZ4b29mdlVuaGJmRFEtU3JhMjcwNWRVZnhVRSIsInJpZCI6ImY4NWNiYTFmLTZjMWEtNDg4MC1iN2Q3LWZkZWYwODBlMGQ0OCJ9.J3rsLjI0cww1RY9GagkLyLWaX7iUmGhXFdCQE9PxDYcaptkizpOn2XDSVM_jG6Mar9Bn8hE_Ikxc5gKRa-uwCQ';
 
-if (!fs.existsSync(DB_DIR)) {
-  try {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-  } catch (_) {}
+// Synchronous bridge wrapper for universal queries
+class TursoUniversalBridge {
+  private client: any;
+  private localDb: any;
+
+  constructor() {
+    if (TURSO_URL && TURSO_TOKEN) {
+      this.client = createClient({
+        url: TURSO_URL,
+        authToken: TURSO_TOKEN
+      });
+    }
+
+    const isVercel = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
+    const DB_DIR = isVercel ? os.tmpdir() : path.join(process.cwd(), 'data');
+    if (!fs.existsSync(DB_DIR)) {
+      try { fs.mkdirSync(DB_DIR, { recursive: true }); } catch (_) {}
+    }
+    const DB_PATH = process.env.DATABASE_PATH || path.join(DB_DIR, 'mealtracker.db');
+    this.localDb = new DatabaseSync(DB_PATH);
+    initDatabase(this.localDb);
+  }
+
+  prepare(sql: string) {
+    const localStmt = this.localDb.prepare(sql);
+    const client = this.client;
+
+    return {
+      get: (...args: any[]) => {
+        // Sync execution on local cache
+        const res = localStmt.get(...args);
+        // Async mirror to Turso cloud
+        if (client && (sql.trim().toUpperCase().startsWith('INSERT') || sql.trim().toUpperCase().startsWith('UPDATE') || sql.trim().toUpperCase().startsWith('DELETE'))) {
+          client.execute({ sql, args }).catch((e: any) => console.error('Cloud sync err:', e));
+        }
+        return res;
+      },
+      all: (...args: any[]) => {
+        return localStmt.all(...args);
+      },
+      run: (...args: any[]) => {
+        const res = localStmt.run(...args);
+        if (client) {
+          client.execute({ sql, args }).catch((e: any) => console.error('Cloud sync err:', e));
+        }
+        return res;
+      }
+    };
+  }
+
+  exec(sql: string) {
+    const res = this.localDb.exec(sql);
+    if (this.client) {
+      this.client.execute(sql).catch(() => {});
+    }
+    return res;
+  }
 }
-
-const DB_PATH = process.env.DATABASE_PATH || path.join(DB_DIR, 'mealtracker.db');
 
 let dbInstance: any = null;
 
 export function getDatabase(): any {
   if (!dbInstance) {
-    const isNew = !fs.existsSync(DB_PATH);
-    dbInstance = new DatabaseSync(DB_PATH);
-    initDatabase(dbInstance, isNew);
+    dbInstance = new TursoUniversalBridge();
   }
   return dbInstance;
 }
 
-function initDatabase(db: any, isNew: boolean) {
+function initDatabase(db: any) {
   const schemaPath = path.join(process.cwd(), 'lib', 'db', 'schema.sql');
   if (fs.existsSync(schemaPath)) {
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
     db.exec(schemaSql);
   }
-  try {
-    db.exec(`ALTER TABLE expenses ADD COLUMN receipt_images TEXT;`);
-  } catch (_) {}
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN username TEXT;`);
-  } catch (_) {}
-  try {
-    db.exec(`ALTER TABLE users ADD COLUMN password TEXT;`);
-  } catch (_) {}
+  try { db.exec(`ALTER TABLE expenses ADD COLUMN receipt_images TEXT;`); } catch (_) {}
+  try { db.exec(`ALTER TABLE users ADD COLUMN username TEXT;`); } catch (_) {}
+  try { db.exec(`ALTER TABLE users ADD COLUMN password TEXT;`); } catch (_) {}
 
-  // Automatically seed on initial creation if empty
   try {
     const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
     if (!userCount || userCount.count === 0) {
