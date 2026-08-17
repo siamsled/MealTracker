@@ -42,7 +42,7 @@ const AVAILABLE_INSTRUCTIONS = [
   { id: 'less_oil', category: 'cooking', label: 'তেল কম', icon: '🧂' },
 
   // Room Cleaning for Khala (Pure Bangla)
-  { id: 'clean_raiyan', category: 'cleaning', label: 'রাইয়ানের রুম পরিষ্কার', icon: '🧹' },
+  { id: 'clean_raian', category: 'cleaning', label: 'রাইয়ানের রুম পরিষ্কার', icon: '🧹' },
   { id: 'clean_siam', category: 'cleaning', label: 'সিয়ামের রুম পরিষ্কার', icon: '🧹' },
   { id: 'clean_jubayer', category: 'cleaning', label: 'জুবায়েরের রুম পরিষ্কার', icon: '🧹' },
   { id: 'clean_living', category: 'cleaning', label: 'ড্রয়িং রুম পরিষ্কার', icon: '🧹' },
