@@ -1,0 +1,43 @@
+{
+  "name": "MealTracker Household Ledger",
+  "short_name": "MealTracker",
+  "description": "Continuous household food accounting and meal management system for flatmates and cook",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8f9fa",
+  "theme_color": "#111418",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today's Meals",
+      "url": "/meals",
+      "description": "View and edit today's meal count"
+    },
+    {
+      "name": "Add Bazaar",
+      "url": "/bazaar?new=true",
+      "description": "Record a new bazaar food purchase"
+    },
+    {
+      "name": "Cook View",
+      "url": "/cook",
+      "description": "Daily cooking instructions"
+    }
+  ],
+  "categories": ["utilities", "finance", "productivity"]
+}
