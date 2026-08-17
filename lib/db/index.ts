@@ -84,6 +84,7 @@ function initDatabase(db: any) {
   try { db.exec(`ALTER TABLE expenses ADD COLUMN receipt_images TEXT;`); } catch (_) {}
   try { db.exec(`ALTER TABLE users ADD COLUMN username TEXT;`); } catch (_) {}
   try { db.exec(`ALTER TABLE users ADD COLUMN password TEXT;`); } catch (_) {}
+  try { db.exec(`ALTER TABLE users ADD COLUMN avatar TEXT;`); } catch (_) {}
 
   try {
     const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
@@ -95,57 +96,57 @@ function initDatabase(db: any) {
 }
 
 const SEED_DATA = [
-  { date: '2026-06-07', siamMeals: 0, siamBazar: 1100, siamDesc: 'Bazar', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-09', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 1320, raiyanDesc: 'Bazar; oil', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-10', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-11', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-14', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-17', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-18', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-19', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-21', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 210, jubayerDesc: 'Egg,oil' },
-  { date: '2026-06-22', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 370, jubayerDesc: 'Bazar' },
-  { date: '2026-06-23', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-26', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-06-30', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 510, jubayerDesc: 'Chicken, Oil, Veg' },
-  { date: '2026-07-01', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-02', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 164, jubayerDesc: 'Peyaj, Eggs ,Lentil' },
-  { date: '2026-07-03', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-04', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 758, raiyanDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-05', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-06', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 425, jubayerDesc: 'chicken, Oil....' },
-  { date: '2026-07-07', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-08', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-09', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-11', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 220, jubayerDesc: 'Oil; Peyaj,zeera,moric' },
-  { date: '2026-07-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 105, jubayerDesc: 'Polao chal, mugdal' },
-  { date: '2026-07-13', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-14', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-15', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 816, raiyanDesc: 'Final Bazar for July Hopefully', jubayerMeals: 1, jubayerBazar: 360, jubayerDesc: 'Chicken, Polao Chal' },
-  { date: '2026-07-16', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-17', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-18', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-19', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-20', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-21', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-23', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-24', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 200, raiyanDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 295, jubayerDesc: 'Cal, Dal, Egg, Peyaj' },
-  { date: '2026-07-25', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-26', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-07-27', siamMeals: 0, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-01', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 0, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 42, jubayerDesc: 'Salt' },
-  { date: '2026-08-02', siamMeals: 0, siamBazar: 1500, siamDesc: 'Bazar', raiyanMeals: 0, raiyanBazar: 500, raiyanDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 380, jubayerDesc: 'Bazar' },
-  { date: '2026-08-03', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-04', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-05', siamMeals: 2, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-10', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-11', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 80, jubayerDesc: 'Egg 6' },
-  { date: '2026-08-13', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-14', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 2, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-16', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 0, raiyanDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
-  { date: '2026-08-17', siamMeals: 1, siamBazar: 0, siamDesc: '', raiyanMeals: 1, raiyanBazar: 500, raiyanDesc: 'bazar', jubayerMeals: 1, jubayerBazar: 80, jubayerDesc: 'bazar' }
+  { date: '2026-06-07', siamMeals: 0, siamBazar: 1100, siamDesc: 'Bazar', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-09', siamMeals: 2, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 1320, raianDesc: 'Bazar; oil', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-10', siamMeals: 2, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-11', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-14', siamMeals: 2, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-17', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-18', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-19', siamMeals: 2, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-21', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 210, jubayerDesc: 'Egg,oil' },
+  { date: '2026-06-22', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 2, jubayerBazar: 370, jubayerDesc: 'Bazar' },
+  { date: '2026-06-23', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-26', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-06-30', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 510, jubayerDesc: 'Chicken, Oil, Veg' },
+  { date: '2026-07-01', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-02', siamMeals: 2, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 164, jubayerDesc: 'Peyaj, Eggs ,Lentil' },
+  { date: '2026-07-03', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-04', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 758, raianDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-05', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-06', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 425, jubayerDesc: 'chicken, Oil....' },
+  { date: '2026-07-07', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-08', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-09', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-11', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 220, jubayerDesc: 'Oil; Peyaj,zeera,moric' },
+  { date: '2026-07-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 105, jubayerDesc: 'Polao chal, mugdal' },
+  { date: '2026-07-13', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-14', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-15', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 816, raianDesc: 'Final Bazar for July Hopefully', jubayerMeals: 1, jubayerBazar: 360, jubayerDesc: 'Chicken, Polao Chal' },
+  { date: '2026-07-16', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-17', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-18', siamMeals: 2, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 2, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-19', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-20', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-21', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-23', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-24', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 200, raianDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 295, jubayerDesc: 'Cal, Dal, Egg, Peyaj' },
+  { date: '2026-07-25', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-26', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-07-27', siamMeals: 0, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 0, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-01', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 0, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 42, jubayerDesc: 'Salt' },
+  { date: '2026-08-02', siamMeals: 0, siamBazar: 1500, siamDesc: 'Bazar', raianMeals: 0, raianBazar: 500, raianDesc: 'Bazar', jubayerMeals: 0, jubayerBazar: 380, jubayerDesc: 'Bazar' },
+  { date: '2026-08-03', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-04', siamMeals: 2, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-05', siamMeals: 2, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-10', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-11', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-12', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 80, jubayerDesc: 'Egg 6' },
+  { date: '2026-08-13', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-14', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 2, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-16', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 0, raianDesc: '', jubayerMeals: 1, jubayerBazar: 0, jubayerDesc: '' },
+  { date: '2026-08-17', siamMeals: 1, siamBazar: 0, siamDesc: '', raianMeals: 1, raianBazar: 500, raianDesc: 'bazar', jubayerMeals: 1, jubayerBazar: 80, jubayerDesc: 'bazar' }
 ];
 
 function autoSeed(db: any) {
@@ -169,7 +170,7 @@ function autoSeed(db: any) {
 
     const users = [
       { id: 'usr-siam', name: 'Siam', username: 'siam', password: '111', email: 'siam@household.local', role: 'flatmate', pin: '1111' },
-      { id: 'usr-raiyan', name: 'Raiyan', username: 'raiyan', password: '222', email: 'raiyan@household.local', role: 'flatmate', pin: '2222' },
+      { id: 'usr-raian', name: 'Raian', username: 'raian', password: '222', email: 'raian@household.local', role: 'flatmate', pin: '2222' },
       { id: 'usr-jubayer', name: 'Jubayer', username: 'jubayer', password: '333', email: 'jubayer@household.local', role: 'flatmate', pin: '3333' },
       { id: 'usr-admin', name: 'Admin', username: 'admin', password: '999', email: 'admin@household.local', role: 'admin', pin: '9999' },
       { id: 'usr-khala', name: 'Khala (Cook)', username: 'khala', password: '000', email: 'khala@household.local', role: 'cook', pin: '0000' }
@@ -210,7 +211,7 @@ function autoSeed(db: any) {
     for (const row of SEED_DATA) {
       const d = row.date;
       insertMeal.run('dm-siam-' + d, householdId, 'usr-siam', d, row.siamMeals, 1, d + 'T06:00:00Z', d + 'T06:00:00Z');
-      insertMeal.run('dm-raiyan-' + d, householdId, 'usr-raiyan', d, row.raiyanMeals, 1, d + 'T06:00:00Z', d + 'T06:00:00Z');
+      insertMeal.run('dm-raian-' + d, householdId, 'usr-raian', d, row.raianMeals, 1, d + 'T06:00:00Z', d + 'T06:00:00Z');
       insertMeal.run('dm-jubayer-' + d, householdId, 'usr-jubayer', d, row.jubayerMeals, 1, d + 'T06:00:00Z', d + 'T06:00:00Z');
 
       if (row.siamBazar > 0) {
@@ -219,10 +220,10 @@ function autoSeed(db: any) {
         insertAudit.run('aud-' + expId, householdId, 'usr-siam', 'RECORD_BAZAAR', 'expenses', expId, null, '+৳' + row.siamBazar, 'Recorded: ' + (row.siamDesc || 'Bazaar'), d + 'T10:00:00Z');
       }
 
-      if (row.raiyanBazar > 0) {
-        const expId = 'exp-raiyan-' + d;
-        insertExpense.run(expId, householdId, 'usr-raiyan', d, row.raiyanBazar, 'cat-food-1', row.raiyanDesc || 'Bazaar', '[]', 'usr-raiyan', d + 'T10:00:00Z');
-        insertAudit.run('aud-' + expId, householdId, 'usr-raiyan', 'RECORD_BAZAAR', 'expenses', expId, null, '+৳' + row.raiyanBazar, 'Recorded: ' + (row.raiyanDesc || 'Bazaar'), d + 'T10:00:00Z');
+      if (row.raianBazar > 0) {
+        const expId = 'exp-raian-' + d;
+        insertExpense.run(expId, householdId, 'usr-raian', d, row.raianBazar, 'cat-food-1', row.raianDesc || 'Bazaar', '[]', 'usr-raian', d + 'T10:00:00Z');
+        insertAudit.run('aud-' + expId, householdId, 'usr-raian', 'RECORD_BAZAAR', 'expenses', expId, null, '+৳' + row.raianBazar, 'Recorded: ' + (row.raianDesc || 'Bazaar'), d + 'T10:00:00Z');
       }
 
       if (row.jubayerBazar > 0) {
@@ -244,6 +245,7 @@ export interface UserRecord {
   email: string;
   username?: string;
   password?: string;
+  avatar?: string;
   role: 'admin' | 'flatmate' | 'cook';
   pin: string;
   is_active: number;

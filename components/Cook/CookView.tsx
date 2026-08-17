@@ -76,6 +76,50 @@ export default function CookView() {
     if (!data) return;
 
     setIsAudioLoading(true);
+    const textToSpeak = data.bengaliText || '';
+
+    // Function to speak via browser Web Speech API
+    const speakWithWebSpeech = () => {
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(textToSpeak);
+          utterance.lang = 'bn-BD';
+          utterance.rate = speed === 0.8 ? 0.85 : 1.0;
+          
+          // Try to find a Bengali voice
+          const voices = window.speechSynthesis.getVoices();
+          const bnVoice = voices.find(v => v.lang.includes('bn') || v.name.toLowerCase().includes('bangla') || v.name.toLowerCase().includes('bengali'));
+          if (bnVoice) {
+            utterance.voice = bnVoice;
+          }
+
+          utterance.onstart = () => {
+            setIsAudioLoading(false);
+            setIsPlaying(true);
+          };
+
+          utterance.onend = () => {
+            setIsPlaying(false);
+            setIsAudioLoading(false);
+          };
+
+          utterance.onerror = () => {
+            setIsPlaying(false);
+            setIsAudioLoading(false);
+          };
+
+          window.speechSynthesis.speak(utterance);
+        } else {
+          setIsPlaying(false);
+          setIsAudioLoading(false);
+        }
+      } catch (_) {
+        setIsPlaying(false);
+        setIsAudioLoading(false);
+      }
+    };
+
     try {
       const rateParam = speed === 0.8 ? '-15%' : '+0%';
       const audioUrl = `/api/cook/audio?date=${date}&rate=${encodeURIComponent(rateParam)}`;
@@ -93,19 +137,25 @@ export default function CookView() {
         setAudioObj(null);
       };
 
-      audio.onerror = (e) => {
-        console.error('Audio load error:', e);
-        setIsPlaying(false);
-        setIsAudioLoading(false);
+      audio.onerror = () => {
+        console.warn('Server TTS unavailable in serverless environment, falling back to Web Speech API...');
+        speakWithWebSpeech();
       };
 
-      await audio.play();
-      setIsAudioLoading(false);
-      setIsPlaying(true);
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsAudioLoading(false);
+            setIsPlaying(true);
+          })
+          .catch(() => {
+            speakWithWebSpeech();
+          });
+      }
     } catch (err) {
-      console.error('Playback error:', err);
-      setIsPlaying(false);
-      setIsAudioLoading(false);
+      console.warn('Audio play failed, falling back to Web Speech:', err);
+      speakWithWebSpeech();
     }
   }
 

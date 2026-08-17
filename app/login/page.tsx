@@ -203,6 +203,36 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        {/* Quick Flatmate Chips */}
+        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #30363d', textAlign: 'center' }}>
+          <div style={{ fontSize: '11px', color: '#8b949e', marginBottom: '8px', fontWeight: 600 }}>
+            Quick Select Flatmate:
+          </div>
+          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => { setUsername('siam'); setPassword('111'); }}
+              style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#21262d', border: '1px solid #30363d', borderRadius: '4px', color: '#c9d1d9', cursor: 'pointer' }}
+            >
+              Siam (111)
+            </button>
+            <button
+              type="button"
+              onClick={() => { setUsername('raian'); setPassword('222'); }}
+              style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#21262d', border: '1px solid #30363d', borderRadius: '4px', color: '#c9d1d9', cursor: 'pointer' }}
+            >
+              Raian (222)
+            </button>
+            <button
+              type="button"
+              onClick={() => { setUsername('jubayer'); setPassword('333'); }}
+              style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#21262d', border: '1px solid #30363d', borderRadius: '4px', color: '#c9d1d9', cursor: 'pointer' }}
+            >
+              Jubayer (333)
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

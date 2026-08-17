@@ -20,13 +20,19 @@ import {
   ShieldAlert,
   Menu,
   X,
-  LogOut
+  LogOut,
+  Camera,
+  KeyRound,
+  Check
 } from 'lucide-react';
+import { compressReceiptImage } from '@/lib/imageCompressor';
 
 interface User {
   id: string;
   name: string;
+  username?: string;
   email: string;
+  avatar?: string;
   role: 'admin' | 'flatmate' | 'cook';
 }
 
@@ -43,6 +49,13 @@ export default function AppShell({ children }: AppShellProps) {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Profile Settings Modal State
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileAvatar, setProfileAvatar] = useState<string>('');
+  const [newPassword, setNewPassword] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
 
   useEffect(() => {
     fetchSession();
@@ -93,6 +106,46 @@ export default function AppShell({ children }: AppShellProps) {
     } catch (err) {
       console.error(err);
       router.push('/login');
+    }
+  }
+
+  async function handleAvatarUpload(file: File) {
+    try {
+      const compressed = await compressReceiptImage(file);
+      setProfileAvatar(compressed.base64);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    setProfileSaving(true);
+    setProfileSuccessMsg('');
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_profile',
+          avatar: profileAvatar,
+          newPassword: newPassword.trim() || undefined
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        setCurrentUser(data.user);
+        setProfileSuccessMsg('Profile updated successfully!');
+        setTimeout(() => {
+          setShowProfileModal(false);
+          setProfileSuccessMsg('');
+          setNewPassword('');
+        }, 1200);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setProfileSaving(false);
     }
   }
 
@@ -361,42 +414,104 @@ export default function AppShell({ children }: AppShellProps) {
       {/* Main Area */}
       <div className="main-content">
         {/* Top Header */}
-        <header className="top-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-            <div style={{ fontWeight: '800', fontSize: '13.5px', letterSpacing: '-0.2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Flat 6A MealTracker
+        <header className="top-bar" style={{
+          backgroundColor: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          padding: '0 18px',
+          height: '60px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 900,
+              fontSize: '15px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}>
+              ৳
+            </div>
+            <div>
+              <div style={{ fontWeight: '800', fontSize: '14px', letterSpacing: '-0.2px', color: '#0f172a', whiteSpace: 'nowrap' }}>
+                Flat 6A MealTracker
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>
+                Continuous Mess Accounting
+              </div>
             </div>
           </div>
 
-          {/* Logged in User Indicator & Logout */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 10px',
-              backgroundColor: 'var(--bg-surface-alt)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: 700,
-              color: 'var(--text-primary)'
-            }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} />
-              <span>{currentUser?.name || 'User'}</span>
-            </div>
+          {/* Logged in User Profile Chip & Modal Trigger */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+            <button
+              onClick={() => {
+                setProfileAvatar(currentUser?.avatar || '');
+                setShowProfileModal(true);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '4px 10px 4px 4px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '24px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title="Click to edit profile or change password"
+            >
+              {currentUser?.avatar ? (
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.name}
+                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  backgroundColor: '#e0e7ff',
+                  color: '#4338ca',
+                  fontWeight: 800,
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
+              <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#1e293b' }}>
+                {currentUser?.name || 'User'}
+              </span>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }} />
+            </button>
 
             <button
               onClick={handleLogout}
               className="btn btn-sm"
               style={{
-                padding: '4px 8px',
-                fontSize: '11px',
+                padding: '5px 9px',
+                fontSize: '11.5px',
                 fontWeight: 700,
-                backgroundColor: 'transparent',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-secondary)',
-                gap: '4px'
+                backgroundColor: '#fff1f2',
+                border: '1px solid #fecdd3',
+                color: '#e11d48',
+                borderRadius: '6px',
+                gap: '4px',
+                display: 'inline-flex',
+                alignItems: 'center'
               }}
               title="Sign Out"
             >
@@ -405,6 +520,163 @@ export default function AppShell({ children }: AppShellProps) {
             </button>
           </div>
         </header>
+
+        {/* Profile & Password Modal */}
+        {showProfileModal && (
+          <div className="modal-backdrop">
+            <div className="modal-content" style={{ maxWidth: '420px', borderRadius: '12px' }}>
+              <div className="modal-header" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                <div>
+                  <h3 className="modal-title" style={{ fontSize: '16px', fontWeight: 800 }}>Profile &amp; Security</h3>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                    Personalize your account for Flat 6A
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowProfileModal(false)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveProfile} style={{ padding: '16px 0 0 0' }}>
+                {profileSuccessMsg && (
+                  <div style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    color: '#15803d',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    marginBottom: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <Check size={14} />
+                    <span>{profileSuccessMsg}</span>
+                  </div>
+                )}
+
+                {/* Avatar Preview & Upload */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '18px' }}>
+                  <div style={{ position: 'relative', marginBottom: '10px' }}>
+                    {profileAvatar ? (
+                      <img
+                        src={profileAvatar}
+                        alt="Profile Preview"
+                        style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #6366f1' }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '50%',
+                        backgroundColor: '#e0e7ff',
+                        color: '#4338ca',
+                        fontSize: '28px',
+                        fontWeight: 900,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                    )}
+                    <label
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        right: 0,
+                        backgroundColor: '#4f46e5',
+                        color: '#fff',
+                        borderRadius: '50%',
+                        width: '26px',
+                        height: '26px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      }}
+                      title="Upload profile picture"
+                    >
+                      <Camera size={13} />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleAvatarUpload(e.target.files[0]);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>
+                    Tap camera to change profile photo
+                  </div>
+                </div>
+
+                {/* Account Details */}
+                <div style={{ marginBottom: '14px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={currentUser?.name || ''}
+                    disabled
+                    className="form-control"
+                    style={{ backgroundColor: '#f8fafc', color: '#64748b', fontSize: '13px', cursor: 'not-allowed' }}
+                  />
+                </div>
+
+                {/* Change Password */}
+                <div style={{ marginBottom: '18px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
+                    New Password / PIN (Optional)
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Leave blank to keep current password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="form-control"
+                    style={{ fontSize: '13px' }}
+                  />
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                    Minimum 3 characters (e.g. 111, password123)
+                  </div>
+                </div>
+
+                {/* Modal Footer Buttons */}
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileModal(false)}
+                    className="btn"
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={profileSaving}
+                    className="btn btn-primary"
+                    style={{ fontSize: '12px', padding: '6px 16px', fontWeight: 700 }}
+                  >
+                    {profileSaving ? 'Saving...' : 'Save Profile'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Page Container */}
         <main className="page-container">

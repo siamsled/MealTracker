@@ -130,7 +130,7 @@ export function generateBengaliCookingInstruction(
       const personPhrases = eating.map(f => {
         let bName = f.name;
         if (f.name.toLowerCase().includes('siam')) bName = 'সিয়াম';
-        else if (f.name.toLowerCase().includes('raiyan')) bName = 'রাইয়ান';
+        else if (f.name.toLowerCase().includes('raian') || f.name.toLowerCase().includes('raiyan')) bName = 'রাইয়ান';
         else if (f.name.toLowerCase().includes('jubayer')) bName = 'জুবায়ের';
         return `${bName} ${toBengaliNumeral(f.quantity)}টি মিল`;
       });
@@ -148,7 +148,7 @@ export function generateBengaliCookingInstruction(
       if (notEating.length > 0) {
         const notEatingNames = notEating.map(f => {
           if (f.name.toLowerCase().includes('siam')) return 'সিয়াম';
-          if (f.name.toLowerCase().includes('raiyan')) return 'রাইয়ান';
+          if (f.name.toLowerCase().includes('raian') || f.name.toLowerCase().includes('raiyan')) return 'রাইয়ান';
           return 'জুবায়ের';
         });
         eatingSentence += ` ${notEatingNames.join(' এবং ')} আজকে কোনো মিল খাবেন না।`;

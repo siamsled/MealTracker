@@ -25,8 +25,16 @@ const FLATMATE_CANDY_THEMES: Record<string, { bg: string; text: string; border: 
     pillBg: '#ffedd5',
     pillBorder: '#fed7aa'
   },
-  'usr-raiyan': {
+  'usr-raian': {
     bg: '#f0fdf4',      // Soothing Mint / Emerald Candy
+    text: '#15803d',
+    border: '#86efac',
+    cellBg: '#f6fef9',
+    pillBg: '#dcfce7',
+    pillBorder: '#bbf7d0'
+  },
+  'usr-raiyan': {
+    bg: '#f0fdf4',
     text: '#15803d',
     border: '#86efac',
     cellBg: '#f6fef9',
@@ -47,7 +55,7 @@ function getCandyTheme(userId: string, userName: string) {
   if (FLATMATE_CANDY_THEMES[userId]) return FLATMATE_CANDY_THEMES[userId];
   const nameLower = (userName || '').toLowerCase();
   if (nameLower.includes('jubayer')) return FLATMATE_CANDY_THEMES['usr-jubayer'];
-  if (nameLower.includes('raiyan')) return FLATMATE_CANDY_THEMES['usr-raiyan'];
+  if (nameLower.includes('raian') || nameLower.includes('raiyan')) return FLATMATE_CANDY_THEMES['usr-raian'];
   if (nameLower.includes('siam')) return FLATMATE_CANDY_THEMES['usr-siam'];
   return {
     bg: '#f8fafc',

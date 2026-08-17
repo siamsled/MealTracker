@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     }
 
     const user = db.prepare(
-      'SELECT id, household_id, name, username, email, role, is_active FROM users WHERE id = ? AND is_active = 1'
+      'SELECT id, household_id, name, username, email, role, avatar, is_active FROM users WHERE id = ? AND is_active = 1'
     ).get(sessionUserId) as Omit<UserRecord, 'pin' | 'password'> | undefined;
 
     if (!user) {
@@ -55,8 +55,29 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { username, password, userId, pin, action } = body;
+    const { username, password, userId, pin, action, newPassword, avatar, name } = body;
     const db = getDatabase();
+
+    // 1. Profile Update Action (Avatar & Password Change)
+    if (action === 'update_profile') {
+      const sessionUserId = req.cookies.get('mt_user_id')?.value || req.headers.get('x-user-id') || userId;
+      if (!sessionUserId) {
+        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+
+      if (newPassword && newPassword.trim()) {
+        db.prepare('UPDATE users SET password = ?, pin = ? WHERE id = ?').run(newPassword.trim(), newPassword.trim(), sessionUserId);
+      }
+      if (avatar !== undefined) {
+        db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(avatar, sessionUserId);
+      }
+      if (name && name.trim()) {
+        db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name.trim(), sessionUserId);
+      }
+
+      const updated = db.prepare('SELECT id, household_id, name, username, email, role, avatar, is_active FROM users WHERE id = ?').get(sessionUserId);
+      return NextResponse.json({ success: true, message: 'Profile updated successfully', user: updated });
+    }
 
     if (action === 'logout') {
       const response = NextResponse.json({ success: true, message: 'Logged out' });
