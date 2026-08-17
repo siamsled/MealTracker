@@ -77,7 +77,36 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Generate high quality natural Bengali speech MP3 using Google TTS audio stream
+    // Generate high quality natural Bengali male neural voice (bn-BD-PradeepNeural)
+    try {
+      // @ts-ignore
+      const { EdgeTTS } = await import('edge-tts-node');
+      const tts = new EdgeTTS({
+        voice: 'bn-BD-PradeepNeural',
+        rate: speedParam === '-15%' ? '-10%' : '+0%'
+      });
+
+      const audioBuffer = await tts.synthesize(bengaliText);
+
+      if (audioBuffer && audioBuffer.length > 0) {
+        try {
+          fs.writeFileSync(cacheFilePath, audioBuffer);
+        } catch (_) {}
+
+        return new NextResponse(audioBuffer, {
+          status: 200,
+          headers: {
+            'Content-Type': 'audio/mpeg',
+            'Content-Length': audioBuffer.length.toString(),
+            'Cache-Control': 'public, max-age=86400'
+          }
+        });
+      }
+    } catch (edgeErr) {
+      console.warn('EdgeTTS node fallback:', edgeErr);
+    }
+
+    // Secondary fallback: Google TTS stream
     const encodedText = encodeURIComponent(bengaliText);
     const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=bn&client=tw-ob`;
 
@@ -106,7 +135,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    throw new Error('Google Bengali TTS stream failed');
+    throw new Error('Bengali TTS generation failed');
   } catch (error: any) {
     console.error('Audio Generation Error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
