@@ -4,3 +4,5 @@ data/*.db
 data/*.db-journal
 .DS_Store
 *.log
+public/audio_cache
+*.mp3

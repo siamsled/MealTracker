@@ -10,6 +10,8 @@ import crypto from 'crypto';
 
 const execAsync = promisify(exec);
 
+import { synthesizeMaleBengali } from '@/lib/edgeTtsMale';
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
@@ -46,7 +48,7 @@ export async function GET(req: NextRequest) {
       `).all(household.id, date) as any[];
     } catch (_) {}
 
-    // Format Bengali spoken script
+    // Format Bengali spoken script with exact date and meal breakdown
     const bengaliText = generateBengaliCookingInstruction(
       date,
       totalMeals,
@@ -67,7 +69,7 @@ export async function GET(req: NextRequest) {
 
     if (fs.existsSync(cacheFilePath)) {
       const cachedBuffer = fs.readFileSync(cacheFilePath);
-      return new NextResponse(cachedBuffer, {
+      return new NextResponse(new Uint8Array(cachedBuffer), {
         status: 200,
         headers: {
           'Content-Type': 'audio/mpeg',
@@ -77,10 +79,15 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const staticMalePath = path.join(process.cwd(), 'public', 'male_pradeep.mp3');
-    if (fs.existsSync(staticMalePath)) {
-      const audioBuffer = fs.readFileSync(staticMalePath);
-      return new NextResponse(audioBuffer, {
+    // Generate dynamic high clarity Bengali male neural voice (bn-BD-PradeepNeural)
+    const audioBuffer = await synthesizeMaleBengali(bengaliText, 'bn-BD-PradeepNeural', speedParam);
+
+    if (audioBuffer && audioBuffer.length > 0) {
+      try {
+        fs.writeFileSync(cacheFilePath, audioBuffer);
+      } catch (_) {}
+
+      return new NextResponse(new Uint8Array(audioBuffer), {
         status: 200,
         headers: {
           'Content-Type': 'audio/mpeg',
@@ -90,7 +97,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    throw new Error('Male Bengali voice file generation failed');
+    throw new Error('Dynamic male Bengali TTS synthesis failed');
   } catch (error: any) {
     console.error('Audio Generation Error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

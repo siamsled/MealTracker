@@ -411,42 +411,45 @@ export default function AppShell({ children }: AppShellProps) {
         )}
       </aside>
 
-      {/* Main Area */}
+      {/* Main Content Area */}
       <div className="main-content">
         {/* Top Header */}
         <header className="top-bar" style={{
           backgroundColor: '#ffffff',
           borderBottom: '1px solid #e2e8f0',
-          padding: '0 18px',
-          height: '60px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          padding: '0 20px',
+          height: '56px',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 900,
-              fontSize: '15px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              ৳
-            </div>
-            <div>
-              <div style={{ fontWeight: '800', fontSize: '14px', letterSpacing: '-0.2px', color: '#0f172a', whiteSpace: 'nowrap' }}>
-                Flat 6A MealTracker
-              </div>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>
-                Continuous Mess Accounting
-              </div>
+          {/* Left Title / Context (Only show mobile hamburger on mobile, clean breadcrumb on desktop) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="show-on-mobile"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'none', alignItems: 'center', color: '#1e293b' }}
+              aria-label="Open navigation menu"
+            >
+              <Menu size={20} />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{
+                padding: '3px 8px',
+                backgroundColor: '#f1f5f9',
+                border: '1px solid #e2e8f0',
+                borderRadius: '6px',
+                fontSize: '11.5px',
+                fontWeight: 800,
+                color: '#334155',
+                letterSpacing: '0.2px'
+              }}>
+                Flat 6A
+              </span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b' }} className="hide-on-mobile">
+                Household Mess
+              </span>
             </div>
           </div>
 

@@ -181,7 +181,15 @@ export function generateBengaliCookingInstruction(
         }
       } else {
         // Dish / Cooking request
-        if (itemLower.includes('alu') || itemLower.includes('আলু ভাজি')) {
+        if (itemLower.includes('letka') || itemLower.includes('লেটকা')) {
+          dishPhrases.push('লেটকা খিচুড়ি রান্না করবেন');
+        } else if (itemLower.includes('sobji_khichuri') || itemLower.includes('সবজি খিচুড়ি')) {
+          dishPhrases.push('সবজি খিচুড়ি রান্না করবেন');
+        } else if (itemLower.includes('khichuri') || itemLower.includes('খিচুড়ি')) {
+          dishPhrases.push('খিচুড়ি রান্না করবেন');
+        } else if (itemLower.includes('egg') || itemLower.includes('ডিম')) {
+          dishPhrases.push('ডিম ভুনা করবেন');
+        } else if (itemLower.includes('alu') || itemLower.includes('আলু ভাজি')) {
           dishPhrases.push('আলু ভাজি করবেন');
         } else if (itemLower.includes('বেশি আলু') || itemLower.includes('তর্কারি')) {
           dishPhrases.push('তরকারিতে একটু বেশি আলু দিবেন');
@@ -191,8 +199,6 @@ export function generateBengaliCookingInstruction(
           dishPhrases.push('ডাল রান্না করবেন');
         } else if (itemLower.includes('chicken') || itemLower.includes('মুরগি')) {
           dishPhrases.push('মুরগির মাংস রান্না করবেন');
-        } else if (itemLower.includes('egg') || itemLower.includes('ডিম')) {
-          dishPhrases.push('ডিম রান্না বা ভাজি করবেন');
         } else if (itemLower.includes('fish') || itemLower.includes('মাছ')) {
           dishPhrases.push('মাছ রান্না করবেন');
         } else if (itemLower.includes('veg') || itemLower.includes('সবজি')) {

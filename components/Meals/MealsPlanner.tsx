@@ -32,7 +32,10 @@ const AVAILABLE_INSTRUCTIONS = [
   // Cooking preferences (Pure Bangla)
   { id: 'dal', category: 'cooking', label: 'ডাল রান্না', icon: '🍲' },
   { id: 'chicken', category: 'cooking', label: 'মুরগি রান্না', icon: '🍗' },
-  { id: 'eggs', category: 'cooking', label: 'ডিম রান্না বা ভাজি', icon: '🍳' },
+  { id: 'egg_bhuna', category: 'cooking', label: 'ডিম ভুনা', icon: '🍳' },
+  { id: 'khichuri', category: 'cooking', label: 'খিচুড়ি', icon: '🍲' },
+  { id: 'letka_khichuri', category: 'cooking', label: 'লেটকা খিচুড়ি', icon: '🥣' },
+  { id: 'sobji_khichuri', category: 'cooking', label: 'সবজি খিচুড়ি', icon: '🥦' },
   { id: 'fish', category: 'cooking', label: 'মাছ রান্না', icon: '🐟' },
   { id: 'veg', category: 'cooking', label: 'সবজি বা ভাজি', icon: '🥬' },
   { id: 'alu_vaji', category: 'cooking', label: 'আলু ভাজি', icon: '🥔' },
